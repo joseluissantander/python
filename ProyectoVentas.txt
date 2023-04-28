@@ -1,0 +1,113 @@
+import csv
+import datetime
+
+class Venta:
+    def __init__(self, fecha, producto, precio, cantidad):
+        self.fecha = fecha
+        self.producto = producto
+        self.precio = precio
+class Ventas:
+    def __init__(self):
+        self.ventas = []
+
+
+    def agregar_venta(self, venta):
+        self.ventas.append(venta)
+
+    def consultar_ventas(self, fecha_inicio=None, fecha_fin=None):
+        ventas_consultadas = []
+        for venta in self.ventas:
+            if fecha_inicio and venta.fecha < fecha_inicio:
+                continue
+            if fecha_fin and venta.fecha > fecha_fin:
+                continue
+            ventas_consultadas.append(venta)
+        return ventas,consultadas
+
+class ArchivoCSV:
+    def __init__(self, nombre_archivo):
+        self.nombre_archivo = nombre_archivo
+
+    def leer(self):
+        with open(self.nombre_archivo, 'r') as archivo:
+            lector_csv = csv.reader(archivo)
+            ventas = Ventas()
+            for row in lector_csv:
+                fecha = datetime.datetime.strptime(row[0], '%Y-%m-%d').date()
+                producto = row[1]
+                precio = float(row[2])
+                cantidad = int(row[3])
+                venta = Venta(fecha, producto, precio, cantidad)
+                ventas.agregar_venta(venta)
+            return ventas
+
+    def escribir(self, ventas):
+        with open(self.nombre_archivo, 'w', newline='') as archivo:
+            escritor_csv = csv.writer(archivo)
+            for venta in ventas.ventas:
+                escritor_csv.writerow([venta.fecha.strftime('%Y-%m-%d'), venta.producto, venta.precio, venta.cantidad])
+
+def validar_fecha(fecha):
+    try:
+        datetime.datetime.strptime(fecha, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
+
+def validar_precio(precio):
+    try:
+        float(precio)
+        return True
+    except ValueError:
+        return False
+
+def validar_cantidad(cantidad):
+    try:
+        int(cantidad)
+        return True
+    except ValueError:
+        return False
+
+def main():
+    archivo = ArchivoCSV('ventas.csv')
+    ventas = archivo.leer()
+
+    while True:
+        opcion = input("Ingrese 'r' para registrar una venta, 'c' para consultar las ventas, o 's' para salir: ")
+        if opcion == 'r':
+            fecha = input("Ingrese la fecha de la venta (en formato YYYY-MM-DD): ")
+            while not validar_fecha(fecha):
+                fecha = input("Fecha inválida, ingrese la fecha de la venta (en formato YYYY-MM-DD): ")
+            producto = input("Ingrese el nombre del producto vendido: ")
+            precio = input("Ingrese el precio del producto vendido: ")
+            while not validar_precio(precio):
+                precio = input("Precio inválido, ingrese el precio del producto vendido: ")
+            cantidad = input("Ingrese la cantidad de productos vendidos: ")
+            while not validar_cantidad(cantidad):
+                cantidad = input("Cantidad inválida, ingrese la cantidad de productos vendidos: ")
+            venta = Venta(datetime.datetime.strptime(fecha, '%Y-%m-%d').date(), producto, float(precio), int(cantidad))
+            ventas.agregar_venta(venta)
+            archivo.escribir(ventas)
+            print("Venta registrada exitosamente.")
+        elif opcion == 'c':
+            fecha_inicio = input("Ingrese la fecha de inicio para consultar las ventas (en formato YYYY-MM-DD), o presione enter para omitir este filtro: ")
+            if fecha_inicio:
+                while not validar_fecha(fecha_inicio):
+                    fecha_inicio = input("Fecha inválida, ingrese la fecha de inicio para consultar las ventas (en formato YYYY-MM-DD), o presione enter para omitir este filtro: ")
+                fecha_inicio = datetime.datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            fecha_fin = input("Ingrese la fecha de fin para consultar las ventas (en formato YYYY-MM-DD), o presione enter para omitir este filtro: ")
+            if fecha_fin:
+                while not validar_fecha(fecha_fin):
+                    fecha_fin = input("Fecha inválida, ingrese la fecha de fin para consultar las ventas (en formato YYYY-MM-DD), o presione enter para omitir este filtro: ")
+                fecha_fin = datetime.datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            ventas_consultadas = ventas.consultar_ventas(fecha_inicio, fecha_fin)
+            print("Ventas realizadas:")
+            for venta in ventas_consultadas:
+                print(fecha, producto, precio, cantidad)
+        elif opcion == 's':
+            break
+        else:
+            print("Opción inválida, por favor ingrese 'r', 'c' o 's'.")
+
+if __name__ == '__main__':
+    main()

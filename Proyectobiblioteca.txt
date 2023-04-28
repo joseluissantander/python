@@ -1,0 +1,145 @@
+import json
+
+class Libro:
+    def __init__(self, titulo, autor, año, paginas, estado="disponible"):
+        self.titulo = titulo
+        self.autor = autor
+        self.año = año
+        self.paginas = paginas
+        self.estado = estado
+
+    def prestar(self):
+        if self.estado == "disponible":
+            self.estado = "prestado"
+            return True
+        else:
+            return False
+
+    def devolver(self):
+        self.estado = "disponible"
+    
+    def imprimir_info(self):
+        print(f"Título: {self.titulo}")
+        print(f"Autor: {self.autor}")
+        print(f"Año de publicación: {self.año}")
+        print(f"Páginas: {self.paginas}")
+        print(f"Estado: {self.estado}")
+    
+    def to_dict(self):
+        return {
+            "titulo": self.titulo,
+            "autor": self.autor,
+            "año": self.año,
+            "paginas": self.paginas,
+            "estado": self.estado
+        }
+
+class Biblioteca:
+    def __init__(self):
+        self.libros = []
+
+    def agregar_libro(self, libro):
+        self.libros.append(libro)
+
+    def buscar_por_titulo(self, titulo):
+        return [libro for libro in self.libros if libro.titulo == titulo]
+    
+    def buscar_por_autor(self, autor):
+        return [libro for libro in self.libros if libro.autor == autor]
+
+    def listar_disponibles(self):
+        return [libro for libro in self.libros if libro.estado == "disponible"]
+    
+    def guardar_en_archivo(self, nombre_archivo):
+        with open(nombre_archivo, "w") as archivo:
+            libros_dict = [libro.to_dict() for libro in self.libros]
+            json.dump(libros_dict, archivo)
+
+    def cargar_desde_archivo(self, nombre_archivo):
+        with open(nombre_archivo, "r") as archivo:
+            libros_dict = json.load(archivo)
+            self.libros = [Libro(**libro) for libro in libros_dict]
+
+def cantidad_total_paginas(biblioteca):
+    return sum([libro.paginas for libro in biblioteca.libros])
+
+def promedio_paginas_por_libro(biblioteca):
+    cantidad_libros = len(biblioteca.libros)
+    if cantidad_libros > 0:
+        return cantidad_total_paginas(biblioteca) / cantidad_libros
+    else:
+        return 0
+
+def cantidad_libros_por_año(biblioteca, año):
+    return len([libro for libro in biblioteca.libros if libro.año == año])
+
+biblioteca = Biblioteca()
+
+while True:
+    print("1. Agregar libro")
+    print("2. Buscar por título")
+    print("3. Buscar por autor")
+    print("4. Listar libros disponibles")
+    print("5. Guardar en archivo")
+    print("6. Cargar desde archivo")
+    print("7. Cantidad total de páginas en la biblioteca")
+    print("8. Promedio de páginas por libro")
+    print("9. Cantidad de libros publicados en un año determinado")
+    print("0. Salir")
+
+    opcion = input("Ingrese una opción: ")
+
+    if opcion == "1":
+        titulo = input("Ingrese el título: ")
+        autor = input("Ingrese el autor: ")
+        año = input("Ingrese el año de publicación: ")
+        paginas = int(input("Ingrese la cantidad de páginas: "))
+        libro = Libro(titulo, autor, año, paginas)
+        biblioteca.agregar_libro(libro)
+        print("Libro agregado exitosamente.")
+    elif opcion == "2":
+        titulo = input("Ingrese el título a buscar: ")
+        libros_encontrados = biblioteca.buscar_por_titulo(titulo)
+        if len(libros_encontrados) > 0:
+            for libro in libros_encontrados:
+                libro.imprimir_info()
+        else:
+            print("No se encontraron libros.")
+    elif opcion == "3":
+        autor = input("Ingrese el autor a buscar: ")
+        libros_encontrados = biblioteca.buscar_por_autor(autor)
+        if len(libros_encontrados) > 0:
+            for libro in libros_encontrados:
+                libro.imprimir_info()
+        else:
+            print("No se encontraron libros.")
+    elif opcion == "4":
+        libros_disponibles = biblioteca.listar_disponibles()
+        if len(libros_disponibles) > 0:
+            for libro in libros_disponibles:
+                libro.imprimir_info()
+        else:
+            print("No hay libros disponibles.")
+    elif opcion == "5":
+        nombre_archivo = input("Ingrese el nombre del archivo: ")
+        biblioteca.guardar_en_archivo(nombre_archivo)
+        print("Biblioteca guardada exitosamente.")
+    elif opcion == "6":
+        nombre_archivo = input("Ingrese el nombre del archivo: ")
+        biblioteca.cargar_desde_archivo(nombre_archivo)
+        print("Biblioteca cargada exitosamente.")
+    elif opcion == "7":
+        print(f"La cantidad total de páginas en la biblioteca es: {cantidad_total_paginas(biblioteca)}")
+    elif opcion == "8":
+        print(f"El promedio de páginas por libro es: {promedio_paginas_por_libro(biblioteca)}")
+    elif opcion == "9":
+        año = input("Ingrese el año a buscar: ")
+        print(f"La cantidad de libros publicados en el año {año} es: {cantidad_libros_por_año(biblioteca, año)}")
+    elif opcion == "0":
+        break
+    else:
+        print("Opción inválida.")
+
+
+
+
